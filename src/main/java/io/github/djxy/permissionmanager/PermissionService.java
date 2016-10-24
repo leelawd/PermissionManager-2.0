@@ -1,5 +1,6 @@
 package io.github.djxy.permissionmanager;
 
+import io.github.djxy.permissionmanager.subjects.special.Default;
 import io.github.djxy.permissionmanager.subjects.group.GroupCollection;
 import io.github.djxy.permissionmanager.subjects.special.SpecialCollection;
 import io.github.djxy.permissionmanager.subjects.user.UserCollection;
@@ -40,11 +41,11 @@ public class PermissionService implements org.spongepowered.api.service.permissi
     }
 
     public SubjectData getDefaultData() {
-        return SpecialCollection.instance.getDefaults().getSubjectData();
+        return Default.instance.getSubjectData();
     }
 
     public Subject getDefaults() {
-        return SpecialCollection.instance.getDefaults();
+        return Default.instance;
     }
 
     @Override

@@ -2,6 +2,7 @@ package io.github.djxy.permissionmanager.subjects.user;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import io.github.djxy.permissionmanager.PermissionService;
 import io.github.djxy.permissionmanager.language.Language;
@@ -13,6 +14,7 @@ import io.github.djxy.permissionmanager.subjects.Permission;
 import io.github.djxy.permissionmanager.subjects.Subject;
 import io.github.djxy.permissionmanager.subjects.SubjectData;
 import io.github.djxy.permissionmanager.subjects.group.Group;
+import io.github.djxy.permissionmanager.subjects.special.Default;
 import io.github.djxy.permissionmanager.util.ContextUtil;
 import ninja.leaping.configurate.ConfigurationNode;
 import org.spongepowered.api.Sponge;
@@ -21,11 +23,7 @@ import org.spongepowered.api.entity.living.player.Player;
 import org.spongepowered.api.service.context.Context;
 import org.spongepowered.api.util.Tristate;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
@@ -33,6 +31,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 public class User extends Subject {
 
+    private final static Set<Context> GLOBAL_SET = org.spongepowered.api.service.permission.SubjectData.GLOBAL_CONTEXT;
     private final static Logger LOGGER = new Logger(User.class);
 
     private final UUID uuid;
@@ -98,9 +97,7 @@ public class User extends Subject {
             return opt;
         }
 
-        logGetOption(LOGGER, this, set, key, opt);
-
-        return Optional.empty();
+        return Default.instance.getOption(set, key);
     }
 
     private Optional<String> getOption(SubjectData subjectData, Set<Context> set, String key){
@@ -199,6 +196,46 @@ public class User extends Subject {
         }
 
         logGetPermissionValue(LOGGER, this, set, permission, Tristate.UNDEFINED);
+
+        return Tristate.UNDEFINED;
+    }
+
+    private Tristate getPermissionValueTest(Set<Context> set, String permission){
+        Permission perm;
+
+        if(this.getTransientSubjectData().containsContexts(set)){
+            if((perm = this.getTransientSubjectData().getContextContainer(set).getPermissions().getPermission(permission)) != null)
+                return testPermissionRules(perm);
+        }
+
+        if(this.getSubjectData().containsContexts(set)){
+            if((perm = this.getSubjectData().getContextContainer(set).getPermissions().getPermission(permission)) != null)
+                return testPermissionRules(perm);
+        }
+
+        if(getPlayerWorld().isPresent()){
+            Set<Context> worldSet = Sets.newHashSet(new Context(Context.WORLD_KEY, getPlayerWorld().get()));
+
+            if(this.getTransientSubjectData().containsContexts(worldSet)){
+                if((perm = this.getTransientSubjectData().getContextContainer(worldSet).getPermissions().getPermission(permission)) != null)
+                    return testPermissionRules(perm);
+            }
+
+            if(this.getSubjectData().containsContexts(worldSet)){
+                if((perm = this.getSubjectData().getContextContainer(worldSet).getPermissions().getPermission(permission)) != null)
+                    return testPermissionRules(perm);
+            }
+        }
+
+        if(this.getTransientSubjectData().containsContexts(GLOBAL_SET)){
+            if((perm = this.getTransientSubjectData().getContextContainer(GLOBAL_SET).getPermissions().getPermission(permission)) != null)
+                return testPermissionRules(perm);
+        }
+
+        if(this.getSubjectData().containsContexts(GLOBAL_SET)){
+            if((perm = this.getSubjectData().getContextContainer(GLOBAL_SET).getPermissions().getPermission(permission)) != null)
+                return testPermissionRules(perm);
+        }
 
         return Tristate.UNDEFINED;
     }

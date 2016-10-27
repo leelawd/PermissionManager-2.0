@@ -5,6 +5,7 @@ import io.github.djxy.permissionmanager.logger.Logger;
 import io.github.djxy.permissionmanager.logger.LoggerMode;
 import io.github.djxy.permissionmanager.subjects.group.Group;
 import io.github.djxy.permissionmanager.subjects.group.GroupCollection;
+import io.github.djxy.permissionmanager.subjects.special.Default;
 import io.github.djxy.permissionmanager.subjects.user.User;
 import io.github.djxy.permissionmanager.subjects.user.UserCollection;
 import junit.framework.Assert;
@@ -42,6 +43,9 @@ public class SubjectTest {
             GroupCollection.instance.setDirectory(FileSystems.getDefault().getPath("groups"));
 
             GroupCollection.instance.createDefaultGroup();
+
+            Default.instance.getTransientSubjectData().setPermission(globalContext, "griefprevention.claim.flag.block-break", Tristate.FALSE);
+            Default.instance.getSubjectData().setPermission(globalContext, "griefprevention.claim.flag.block-break.minecraft.chest", Tristate.TRUE);
 
             user = UserCollection.instance.createUser(UUID.randomUUID());
             groupGlobal = GroupCollection.instance.createGroup("groupGlobal");
@@ -98,6 +102,11 @@ public class SubjectTest {
         } catch (SubjectIdentifierExistException e) {
             e.printStackTrace();
         }
+    }
+
+    @Test
+    public void testDefaultPermission(){
+        Assert.assertEquals(true, user.getPermissionValue(globalContext, "griefprevention.claim.flag.block-break.minecraft.chest") == Tristate.TRUE);
     }
 
     @Test

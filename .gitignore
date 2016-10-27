@@ -3,3 +3,7 @@
 *.yml
 *.iml
 PermissionManagerV2.iml
+.classpath
+.settings/org.eclipse.m2e.core.prefs
+.settings/org.eclipse.jdt.core.prefs
+.project
